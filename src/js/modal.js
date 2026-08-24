@@ -283,9 +283,16 @@ function renderModalHtml() {
       </div>
 
       <!-- Drawer Footer -->
-      <div class="modal-footer">
-        <button class="btn-secondary" id="modal-btn-cancel">Fechar</button>
-        <button class="btn-primary" id="modal-btn-save">Salvar Alterações</button>
+      <div class="modal-footer" style="display:flex; justify-position:space-between; align-items:center;">
+        ${activeItem && activeItem.id ? `
+          <button class="btn-secondary" id="modal-btn-delete-footer" style="color: #FF3344; border-color: rgba(255, 51, 68, 0.35); background: rgba(255, 51, 68, 0.1); display:inline-flex; align-items:center; gap:6px;">
+            ${ICONS.trash} Excluir Conteúdo
+          </button>
+        ` : `<div></div>`}
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button class="btn-secondary" id="modal-btn-cancel">Fechar</button>
+          <button class="btn-primary" id="modal-btn-save">Salvar Alterações</button>
+        </div>
       </div>
     </div>
   `;
@@ -302,6 +309,24 @@ function attachModalEvents() {
     isEditMode = !isEditMode;
     renderModalHtml();
   });
+
+  // Handle Delete (Gatilho do cabeçalho e do rodapé)
+  const handleDeleteItem = () => {
+    if (!activeItem || !activeItem.id) return;
+    confirmDeleteModal({
+      title: `Deseja realmente excluir "${activeItem.title}"?`,
+      onConfirm: () => {
+        if (onDeleteCallback && activeItem.id) {
+          onDeleteCallback(activeItem.id);
+        }
+        closeContentModal();
+      }
+    });
+  };
+
+  document.getElementById('modal-btn-delete')?.addEventListener('click', handleDeleteItem);
+  document.getElementById('modal-btn-delete-item')?.addEventListener('click', handleDeleteItem);
+  document.getElementById('modal-btn-delete-footer')?.addEventListener('click', handleDeleteItem);
 
   // Stage select pills
   document.querySelectorAll('.stage-select-pill').forEach(pill => {
@@ -435,18 +460,7 @@ function attachModalEvents() {
   });
 
   // Excluir Conteúdo (Fix 100% funcional com dialog customizado!)
-  document.getElementById('modal-btn-delete')?.addEventListener('click', () => {
-    if (!activeItem.id) return;
-    confirmDeleteModal({
-      title: `Deseja realmente excluir "${activeItem.title}"?`,
-      onConfirm: () => {
-        if (onDeleteCallback && activeItem.id) {
-          onDeleteCallback(activeItem.id);
-        }
-        closeContentModal();
-      }
-    });
-  });
+
 
   // Save
   document.getElementById('modal-btn-save')?.addEventListener('click', () => {
