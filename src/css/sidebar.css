@@ -1,0 +1,167 @@
+/* ==========================================================================
+   SIDEBAR & LAYOUT — BLACK + COOL BLUE GLASS RAIL & STATIC FRAME
+   ========================================================================== */
+
+.app-layout {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - var(--header-height));
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Minimal Vertical Glass Rail ── */
+.sidebar-dock {
+  width: var(--sidebar-width);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  z-index: 20;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--surface-glass);
+  background-image: var(--glass-reflection);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15), var(--glass-highlight);
+}
+
+.dock-pill-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border-radius: var(--radius-lg);
+  background: transparent;
+}
+
+.dock-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: transparent;
+  transition: all var(--duration-normal) cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.dock-btn svg {
+  width: 19px;
+  height: 19px;
+}
+
+.dock-btn:hover {
+  color: var(--text-primary);
+  background: var(--surface-glass-hover);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--glass-highlight);
+  transform: scale(1.04);
+}
+
+.dock-btn.active {
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.45), var(--glass-highlight);
+}
+
+.dock-btn.active::before {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  background: #10B981;
+  border-radius: 9999px;
+  box-shadow: 0 0 10px #10B981;
+}
+
+/* ── Tooltips ── */
+.dock-btn[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 52px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  background: var(--bg-depth-2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: all var(--duration-fast) var(--ease-default);
+  z-index: 50;
+  box-shadow: var(--shadow-md);
+}
+
+.dock-btn:hover[data-tooltip]::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* ── Main Content Viewport (Fixed Outer Boundaries) ── */
+.main-viewport {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Main Board Container (Static Floating Dark Glass Frame) ── */
+.main-board-container {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--surface-glass);
+  background-image: var(--glass-reflection);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 24px 24px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  box-shadow: var(--shadow-lg), var(--glass-highlight);
+}
+
+/* Ambient Neon Gradient Top Reflection */
+.main-board-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #10B981, #34D399, transparent);
+}
+
+/* ── Internal Scroll Mount Point ── */
+#view-content-mount {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+}

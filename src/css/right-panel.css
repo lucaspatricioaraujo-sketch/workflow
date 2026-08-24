@@ -1,0 +1,213 @@
+/* ==========================================================================
+   RIGHT PANEL — BLACK + COOL BLUE INDEPENDENT GLASS MODULES
+   ========================================================================== */
+
+.right-summary-panel {
+  width: var(--right-panel-width);
+  height: 100%;
+  padding: 18px 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+/* Independent Floating Glass Module */
+.summary-card {
+  background: var(--surface-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: border-color var(--duration-normal) var(--ease-default),
+              box-shadow var(--duration-normal) var(--ease-default);
+  box-shadow: var(--shadow-sm);
+}
+
+.summary-card:hover {
+  border-color: var(--border-hover);
+}
+
+.summary-card-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+/* ── Etapas ── */
+.etapas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.etapa-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.etapa-item-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+
+.etapa-item-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.etapa-item-count {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+}
+
+/* ── Legenda ── */
+.legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-dot.dot-pending { background: var(--status-pending); }
+.legend-dot.dot-attention { background: var(--status-attention); }
+.legend-dot.dot-delayed { background: var(--status-delayed); }
+.legend-dot.dot-posted { background: var(--status-posted); }
+.legend-dot.dot-cancelled { background: var(--status-cancelled); }
+
+/* ── Resumo ── */
+.resumo-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.resumo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+}
+
+.resumo-label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.resumo-val {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--text-primary);
+}
+
+/* Progress Bar */
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2563EB 0%, #35D39A 100%);
+  border-radius: 9999px;
+  transition: width 0.5s var(--ease-out);
+}
+
+.progress-label-text {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
+/* ── Atrasados Agora ── */
+.atrasados-now-box {
+  background: var(--surface-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.atrasados-now-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.atrasados-now-content {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+/* ── Calendar Selected Day Panel ── */
+.calendar-selected-day-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.day-item-mini-card {
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.day-item-mini-card:hover {
+  border-color: var(--border-hover);
+  background: var(--surface-glass-hover);
+}

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workflow Audiovisual — Gestão de Conteúdos</title>
+
+  <!-- Inter + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="./src/css/variables.css" />
+  <link rel="stylesheet" href="./src/css/base.css" />
+  <link rel="stylesheet" href="./src/css/header.css" />
+  <link rel="stylesheet" href="./src/css/sidebar.css" />
+  <link rel="stylesheet" href="./src/css/filters.css" />
+  <link rel="stylesheet" href="./src/css/table.css" />
+  <link rel="stylesheet" href="./src/css/calendar.css" />
+  <link rel="stylesheet" href="./src/css/kanban.css" />
+  <link rel="stylesheet" href="./src/css/right-panel.css" />
+  <link rel="stylesheet" href="./src/css/modal.css" />
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="brand-avatar">W</div>
+      <div class="brand-info">
+        <h1 class="brand-title">Workflow Audiovisual</h1>
+        <span class="brand-subtitle">Gestão de conteúdos em tempo real</span>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="header-metrics">
+      <div class="metric-card metric-concluidos" id="card-metric-concluidos" title="Filtrar por Concluídos">
+        <span class="metric-value" id="metric-val-concluidos">0</span>
+        <span class="metric-label">Concluídos</span>
+      </div>
+
+      <div class="metric-card metric-attention" id="card-metric-attention" title="Filtrar por Atenção">
+        <span class="metric-value" id="metric-val-attention">0</span>
+        <span class="metric-label">Atenção</span>
+      </div>
+
+      <div class="metric-card metric-delayed" id="card-metric-delayed" title="Filtrar por Atrasados">
+        <span class="metric-value" id="metric-val-delayed">0</span>
+        <span class="metric-label">Atrasados</span>
+      </div>
+
+      <div class="metric-card metric-pending" id="card-metric-pending" title="Filtrar por Pendentes">
+        <span class="metric-value" id="metric-val-pending">0</span>
+        <span class="metric-label">Pendentes</span>
+      </div>
+    </div>
+
+    <!-- Actions & Clock -->
+    <div class="header-actions">
+      <div class="clock-group">
+        <span class="clock-time" id="live-digital-clock">00:00:00</span>
+        <span class="clock-date" id="live-top-date">23 de agosto de 2026</span>
+      </div>
+
+      <button class="btn-theme-toggle" id="btn-theme-toggle" title="Alternar Modo Claro / Escuro">
+        <svg class="icon-theme-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-theme-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+
+      <button class="btn-settings-gear" id="btn-settings-gear" title="Gerenciar Categorias">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+
+      <button class="btn-primary" id="btn-header-add-content">
+        <span>+</span> Conteúdo
+      </button>
+    </div>
+  </header>
+
+  <!-- App Layout -->
+  <div class="app-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar-dock">
+      <div class="dock-pill-container">
+        <button class="dock-btn active" data-view="table" data-tooltip="Painel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/></svg>
+        </button>
+
+        <button class="dock-btn" data-view="calendar" data-tooltip="Calendário">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+        </button>
+
+        <button class="dock-btn" data-view="kanban" data-tooltip="Kanban">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="6" height="14" x="3" y="5" rx="1"/><rect width="6" height="10" x="11" y="5" rx="1"/><rect width="6" height="16" x="19" y="5" rx="1"/></svg>
+        </button>
+
+        <button class="dock-btn" data-view="completed" data-tooltip="Concluídos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </button>
+      </div>
+
+      <!-- Dock Actions -->
+      <div class="dock-pill-container">
+        <button class="dock-btn" id="btn-export-data" data-tooltip="Exportar backup">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+        </button>
+        <button class="dock-btn" id="btn-import-trigger" data-tooltip="Importar backup">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+        </button>
+        <button class="dock-btn" id="btn-reset-data" data-tooltip="Restaurar padrão">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Viewport -->
+    <main class="main-viewport">
+      <div class="main-board-container">
+
+        <!-- Board Header -->
+        <div class="board-header">
+          <div class="board-title-row">
+            <div>
+              <h2 class="board-main-title">Fluxo de trabalho</h2>
+              <span class="board-main-subtitle">Ordenado pelo prazo mais próximo</span>
+            </div>
+          </div>
+
+          <!-- Category Pills -->
+          <div class="category-pills-bar" id="category-pills-container">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Search -->
+        <div class="board-toolbar">
+          <div class="search-input-wrapper">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg>
+            <input type="text" id="global-search-input" placeholder="Buscar por título, responsável ou anotações..." />
+          </div>
+        </div>
+
+        <!-- Dynamic View -->
+        <div id="view-content-mount" class="animate-fade">
+          <!-- Rendered via JavaScript -->
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Right Panel -->
+    <aside class="right-summary-panel" id="right-panel-mount">
+      <!-- Rendered dynamically -->
+    </aside>
+
+  </div>
+
+  <!-- Entry Script -->
+  <script type="module">
+    import { initApp } from './src/js/app.js';
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>

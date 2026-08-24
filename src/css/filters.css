@@ -1,0 +1,181 @@
+/* ==========================================================================
+   FILTERS & SEARCH — BLACK + COOL BLUE GLASS SYSTEM
+   ========================================================================== */
+
+.board-header {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.board-title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.board-main-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.board-main-subtitle {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.board-today-date {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* ── Category Filter Glass Pills ── */
+.category-pills-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-pill {
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-default);
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.filter-pill:hover {
+  background: var(--surface-glass-hover);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+.filter-pill.active {
+  background: rgba(16, 185, 129, 0.22);
+  color: #34D399;
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
+  font-weight: 700;
+}
+
+/* Category Filter Pill Color Customizations */
+.filter-pill[data-category="INSTA"].active {
+  background: rgba(255, 46, 147, 0.22);
+  color: #FF2E93;
+  border-color: rgba(255, 46, 147, 0.6);
+  box-shadow: 0 0 16px rgba(255, 46, 147, 0.45);
+}
+
+.filter-pill[data-category="REELS"].active {
+  background: rgba(168, 85, 247, 0.22);
+  color: #C084FC;
+  border-color: rgba(168, 85, 247, 0.6);
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.45);
+}
+
+.filter-pill[data-category="TIKTOK"].active {
+  background: rgba(0, 242, 254, 0.22);
+  color: #00F2FE;
+  border-color: rgba(0, 242, 254, 0.6);
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.45);
+}
+
+.filter-pill[data-category="YOUTUBE"].active {
+  background: rgba(255, 51, 68, 0.22);
+  color: #FF3344;
+  border-color: rgba(255, 51, 68, 0.6);
+  box-shadow: 0 0 16px rgba(255, 51, 68, 0.45);
+}
+
+.filter-pill[data-category="FOTO"].active {
+  background: rgba(16, 185, 129, 0.22);
+  color: #34D399;
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
+}
+
+.filter-pill[data-category="CINE"].active {
+  background: rgba(245, 158, 11, 0.22);
+  color: #FBBF24;
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.45);
+}
+
+.btn-add-category-pill {
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.08);
+  color: #34D399;
+  border: 1px dashed rgba(16, 185, 129, 0.4);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-default);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-add-category-pill:hover {
+  color: #FFFFFF;
+  border-color: #34D399;
+  background: rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.45);
+}
+
+/* ── Search Bar ── */
+.board-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+  position: relative;
+  min-width: 240px;
+  flex: 1;
+  max-width: 400px;
+}
+
+.search-input-wrapper svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  color: var(--text-muted);
+}
+
+.search-input-wrapper input {
+  width: 100%;
+  padding: 8px 14px 8px 36px;
+  font-size: 0.8125rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.search-input-wrapper input:focus {
+  background: var(--surface-glass-hover);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-subtle), var(--shadow-blue-glow);
+}
