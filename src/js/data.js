@@ -2,7 +2,7 @@
    DATA STORE - SUPABASE REAL-TIME PERSISTENCE & LOCALSTORAGE FALLBACK
    ========================================================================== */
 
-import { supabase } from './supabaseClient.js';
+import { supabaseApi } from './supabaseClient.js';
 
 const STORAGE_KEY = 'audiovisual_workflow_data_v2';
 const CATEGORIES_KEY = 'audiovisual_categories_v2';
@@ -23,9 +23,9 @@ const INITIAL_DATA = [
   {
     id: 'item_01',
     code: '01',
-    category: 'INSTA',
+    category: 'INSTAGRAM',
     stage: 'gravar',
-    title: 'Reels | Teste de Conteúdo',
+    title: 'Conteúdo teste',
     subtitle: 'Reels • 9:16 • 4K',
     assignee: 'Lucas',
     status: 'atencao',
@@ -36,84 +36,7 @@ const INITIAL_DATA = [
     timeEditingDeadline: '17:58',
     datePosting: '2026-08-29',
     timePosting: '17:58',
-    description: 'Anotação teste de produção e briefing de vídeo.',
-    links: [
-      { id: 'l1', title: 'Referência Visual', url: 'https://instagram.com/reels/exemplo', type: 'reference' }
-    ],
-    attachments: [
-      { id: 'a1', name: 'ChatGPT Image 13 de ago. de 2026.png', size: '2.4 MB', type: 'image' }
-    ],
-    checklist: [
-      { id: 'c1', text: 'Captação de imagem concluída', done: true },
-      { id: 'c2', text: 'Primeiro corte e montagem', done: false }
-    ],
-    comments: [
-      { id: 'cm1', author: 'Lucas', text: 'Anotação teste registrada.', time: '17:58' }
-    ]
-  },
-  {
-    id: 'item_02',
-    code: '02',
-    category: 'REELS',
-    stage: 'editar',
-    title: 'Corrida | Mini Highlight',
-    subtitle: 'Reels • Legenda Dinâmica',
-    assignee: 'Stephany',
-    status: 'pendente',
-    priority: 'media',
-    dateShooting: '2026-08-23',
-    timeShooting: '10:00',
-    dateEditingDeadline: '2026-08-24',
-    timeEditingDeadline: '14:00',
-    datePosting: '2026-08-25',
-    timePosting: '18:00',
-    description: 'Vídeo rápido de melhores momentos.',
-    links: [],
-    attachments: [],
-    checklist: [],
-    comments: []
-  },
-  {
-    id: 'item_03',
-    code: '03',
-    category: 'YOUTUBE',
-    stage: 'validacao',
-    title: 'Vídeo Institucional | Cobertura',
-    subtitle: 'Vídeo Cine • 16:9 • 4K',
-    assignee: 'Lucas',
-    status: 'atencao',
-    priority: 'alta',
-    dateShooting: '2026-08-22',
-    timeShooting: '14:00',
-    dateEditingDeadline: '2026-08-24',
-    timeEditingDeadline: '18:00',
-    datePosting: '2026-08-28',
-    timePosting: '19:00',
-    description: 'Aguardando validação da diretoria.',
-    links: [
-      { id: 'l2', title: 'Prévia Frame.io', url: 'https://frame.io/v/corte-v1', type: 'frameio' }
-    ],
-    attachments: [],
-    checklist: [],
-    comments: []
-  },
-  {
-    id: 'item_04',
-    code: '04',
-    category: 'FOTO',
-    stage: 'concluido',
-    title: 'Post Fotos | Bastidores',
-    subtitle: 'Carrossel • 4:5 • 10 Fotos',
-    assignee: 'Stephany',
-    status: 'postado',
-    priority: 'normal',
-    dateShooting: '2026-08-21',
-    timeShooting: '09:00',
-    dateEditingDeadline: '2026-08-22',
-    timeEditingDeadline: '12:00',
-    datePosting: '2026-08-23',
-    timePosting: '10:00',
-    description: 'Carrossel postado no feed oficial.',
+    description: 'Anotação teste de briefing...',
     links: [],
     attachments: [],
     checklist: [],
@@ -167,95 +90,61 @@ class DataStore {
   }
 
   async initSupabaseSync() {
-    if (!supabase) {
-      console.log('[Supabase] Cliente não inicializado.');
+    if (!supabaseApi.isConfigured) {
+      console.log('[Supabase] Credenciais não configuradas.');
       return;
     }
 
     try {
-      // 1. Busca dados no banco do Supabase ao iniciar
-      const { data, error } = await supabase.from('workflow_store').select('*');
+      // 1. Busca dados no banco do Supabase ao iniciar (funciona 100% em janela anônima)
+      const remoteRows = await supabaseApi.fetchStore();
 
-      if (error) {
-        console.warn('[Supabase] Erro ao buscar tabela workflow_store:', error.message);
-        return;
-      }
+      if (remoteRows && Array.isArray(remoteRows) && remoteRows.length > 0) {
+        this.isSupabaseConnected = true;
 
-      this.isSupabaseConnected = true;
-
-      if (data && data.length > 0) {
-        const itemsRow = data.find(r => r.id === 'items');
-        const categoriesRow = data.find(r => r.id === 'categories');
-        const colorsRow = data.find(r => r.id === 'category_colors');
+        const itemsRow = remoteRows.find(r => r.id === 'items');
+        const categoriesRow = remoteRows.find(r => r.id === 'categories');
+        const colorsRow = remoteRows.find(r => r.id === 'category_colors');
 
         if (itemsRow && Array.isArray(itemsRow.data) && itemsRow.data.length > 0) {
           this.items = itemsRow.data;
           this.saveLocal();
         } else {
-          await this.pushToSupabase('items', this.items);
+          await supabaseApi.upsertStore('items', this.items);
         }
 
         if (categoriesRow && Array.isArray(categoriesRow.data) && categoriesRow.data.length > 0) {
           this.categories = categoriesRow.data;
           this.saveCategoriesLocal();
         } else {
-          await this.pushToSupabase('categories', this.categories);
+          await supabaseApi.upsertStore('categories', this.categories);
         }
 
         if (colorsRow && colorsRow.data) {
           this.categoryColors = colorsRow.data;
           this.saveCategoryColorsLocal();
         } else {
-          await this.pushToSupabase('category_colors', this.categoryColors);
+          await supabaseApi.upsertStore('category_colors', this.categoryColors);
         }
 
         this.notify();
       } else {
-        // Tabela vazia no Supabase: inicializa com o estado atual do usuário!
-        await this.pushToSupabase('items', this.items);
-        await this.pushToSupabase('categories', this.categories);
-        await this.pushToSupabase('category_colors', this.categoryColors);
+        // Tabela vazia no Supabase: inicializa com os dados atuais
+        await supabaseApi.upsertStore('items', this.items);
+        await supabaseApi.upsertStore('categories', this.categories);
+        await supabaseApi.upsertStore('category_colors', this.categoryColors);
       }
 
-      // 2. Realtime WebSocket subscription para sincronização instantânea
-      supabase
-        .channel('public:workflow_store')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'workflow_store' }, payload => {
-          if (payload.new) {
-            const { id, data: newData } = payload.new;
-            if (id === 'items' && Array.isArray(newData)) {
-              if (JSON.stringify(newData) !== JSON.stringify(this.items)) {
-                this.items = newData;
-                this.saveLocal();
-                this.notify();
-              }
-            } else if (id === 'categories' && Array.isArray(newData)) {
-              if (JSON.stringify(newData) !== JSON.stringify(this.categories)) {
-                this.categories = newData;
-                this.saveCategoriesLocal();
-                this.notify();
-              }
-            } else if (id === 'category_colors' && newData) {
-              if (JSON.stringify(newData) !== JSON.stringify(this.categoryColors)) {
-                this.categoryColors = newData;
-                this.saveCategoryColorsLocal();
-                this.notify();
-              }
-            }
-          }
-        })
-        .subscribe();
-
-      // 3. Polling de backup a cada 4 segundos para garantir atualização entre computadores
+      // 2. Polling contínuo a cada 3 segundos (garante sincronização perfeita em todos os computadores e janelas anônimas)
       setInterval(async () => {
         try {
-          const { data: pollData } = await supabase.from('workflow_store').select('*');
-          if (pollData && pollData.length > 0) {
-            const itemsRow = pollData.find(r => r.id === 'items');
-            const categoriesRow = pollData.find(r => r.id === 'categories');
-            const colorsRow = pollData.find(r => r.id === 'category_colors');
+          const pollRows = await supabaseApi.fetchStore();
+          if (pollRows && Array.isArray(pollRows)) {
+            const itemsRow = pollRows.find(r => r.id === 'items');
+            const categoriesRow = pollRows.find(r => r.id === 'categories');
+            const colorsRow = pollRows.find(r => r.id === 'category_colors');
 
-            if (itemsRow && Array.isArray(itemsRow.data)) {
+            if (itemsRow && Array.isArray(itemsRow.data) && itemsRow.data.length > 0) {
               if (JSON.stringify(itemsRow.data) !== JSON.stringify(this.items)) {
                 this.items = itemsRow.data;
                 this.saveLocal();
@@ -263,7 +152,7 @@ class DataStore {
               }
             }
 
-            if (categoriesRow && Array.isArray(categoriesRow.data)) {
+            if (categoriesRow && Array.isArray(categoriesRow.data) && categoriesRow.data.length > 0) {
               if (JSON.stringify(categoriesRow.data) !== JSON.stringify(this.categories)) {
                 this.categories = categoriesRow.data;
                 this.saveCategoriesLocal();
@@ -280,26 +169,17 @@ class DataStore {
             }
           }
         } catch (pollErr) {
-          // Erro silencioso do polling
+          // Erro silencioso de polling
         }
-      }, 4000);
+      }, 3000);
 
     } catch (e) {
-      console.warn('[Supabase] Exceção ao sincronizar:', e);
+      console.warn('[Supabase] Exceção na sincronização:', e);
     }
   }
 
   async pushToSupabase(key, payloadData) {
-    if (!supabase) return;
-    try {
-      await supabase.from('workflow_store').upsert({
-        id: key,
-        data: payloadData,
-        updated_at: new Date().toISOString()
-      });
-    } catch (e) {
-      console.error(`[Supabase] Erro ao enviar ${key}:`, e);
-    }
+    await supabaseApi.upsertStore(key, payloadData);
   }
 
   saveLocal() {
