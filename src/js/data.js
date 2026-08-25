@@ -168,15 +168,16 @@ class DataStore {
 
   async initSupabaseSync() {
     if (!supabase) {
-      console.log('[Supabase] Credenciais não configuradas nas variáveis de ambiente.');
+      console.log('[Supabase] Cliente não inicializado.');
       return;
     }
 
     try {
+      // 1. Busca dados no banco do Supabase ao iniciar
       const { data, error } = await supabase.from('workflow_store').select('*');
 
       if (error) {
-        console.warn('[Supabase] Aviso ao buscar dados (a tabela workflow_store pode precisar ser criada no Supabase):', error.message);
+        console.warn('[Supabase] Erro ao buscar tabela workflow_store:', error.message);
         return;
       }
 
@@ -187,57 +188,101 @@ class DataStore {
         const categoriesRow = data.find(r => r.id === 'categories');
         const colorsRow = data.find(r => r.id === 'category_colors');
 
-        if (itemsRow && Array.isArray(itemsRow.data)) {
+        if (itemsRow && Array.isArray(itemsRow.data) && itemsRow.data.length > 0) {
           this.items = itemsRow.data;
           this.saveLocal();
         } else {
-          this.pushToSupabase('items', this.items);
+          await this.pushToSupabase('items', this.items);
         }
 
-        if (categoriesRow && Array.isArray(categoriesRow.data)) {
+        if (categoriesRow && Array.isArray(categoriesRow.data) && categoriesRow.data.length > 0) {
           this.categories = categoriesRow.data;
           this.saveCategoriesLocal();
         } else {
-          this.pushToSupabase('categories', this.categories);
+          await this.pushToSupabase('categories', this.categories);
         }
 
         if (colorsRow && colorsRow.data) {
           this.categoryColors = colorsRow.data;
           this.saveCategoryColorsLocal();
         } else {
-          this.pushToSupabase('category_colors', this.categoryColors);
+          await this.pushToSupabase('category_colors', this.categoryColors);
         }
 
         this.notify();
       } else {
-        // Tabela vazia: insere os dados iniciais no Supabase
+        // Tabela vazia no Supabase: inicializa com o estado atual do usuário!
         await this.pushToSupabase('items', this.items);
         await this.pushToSupabase('categories', this.categories);
         await this.pushToSupabase('category_colors', this.categoryColors);
       }
 
-      // Escuta mudanças em tempo real de outros dispositivos/computadores
+      // 2. Realtime WebSocket subscription para sincronização instantânea
       supabase
         .channel('public:workflow_store')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'workflow_store' }, payload => {
           if (payload.new) {
             const { id, data: newData } = payload.new;
             if (id === 'items' && Array.isArray(newData)) {
-              this.items = newData;
-              this.saveLocal();
-              this.notify();
+              if (JSON.stringify(newData) !== JSON.stringify(this.items)) {
+                this.items = newData;
+                this.saveLocal();
+                this.notify();
+              }
             } else if (id === 'categories' && Array.isArray(newData)) {
-              this.categories = newData;
-              this.saveCategoriesLocal();
-              this.notify();
+              if (JSON.stringify(newData) !== JSON.stringify(this.categories)) {
+                this.categories = newData;
+                this.saveCategoriesLocal();
+                this.notify();
+              }
             } else if (id === 'category_colors' && newData) {
-              this.categoryColors = newData;
-              this.saveCategoryColorsLocal();
-              this.notify();
+              if (JSON.stringify(newData) !== JSON.stringify(this.categoryColors)) {
+                this.categoryColors = newData;
+                this.saveCategoryColorsLocal();
+                this.notify();
+              }
             }
           }
         })
         .subscribe();
+
+      // 3. Polling de backup a cada 4 segundos para garantir atualização entre computadores
+      setInterval(async () => {
+        try {
+          const { data: pollData } = await supabase.from('workflow_store').select('*');
+          if (pollData && pollData.length > 0) {
+            const itemsRow = pollData.find(r => r.id === 'items');
+            const categoriesRow = pollData.find(r => r.id === 'categories');
+            const colorsRow = pollData.find(r => r.id === 'category_colors');
+
+            if (itemsRow && Array.isArray(itemsRow.data)) {
+              if (JSON.stringify(itemsRow.data) !== JSON.stringify(this.items)) {
+                this.items = itemsRow.data;
+                this.saveLocal();
+                this.notify();
+              }
+            }
+
+            if (categoriesRow && Array.isArray(categoriesRow.data)) {
+              if (JSON.stringify(categoriesRow.data) !== JSON.stringify(this.categories)) {
+                this.categories = categoriesRow.data;
+                this.saveCategoriesLocal();
+                this.notify();
+              }
+            }
+
+            if (colorsRow && colorsRow.data) {
+              if (JSON.stringify(colorsRow.data) !== JSON.stringify(this.categoryColors)) {
+                this.categoryColors = colorsRow.data;
+                this.saveCategoryColorsLocal();
+                this.notify();
+              }
+            }
+          }
+        } catch (pollErr) {
+          // Erro silencioso do polling
+        }
+      }, 4000);
 
     } catch (e) {
       console.warn('[Supabase] Exceção ao sincronizar:', e);
