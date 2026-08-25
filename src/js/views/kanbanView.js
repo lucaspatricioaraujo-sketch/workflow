@@ -23,12 +23,12 @@ export function renderKanbanView(container, items, { onEdit, onStageChange, onAd
       let subDate = item.dateShooting ? formatDateBr(item.dateShooting) : '—';
 
       return `
-        <div class="kanban-card" draggable="true" data-id="${item.id}">
+        <div class="kanban-card" draggable="true" data-id="${item.id}" style="cursor: pointer;">
           <div class="kanban-card-top">
             ${categoryBadgeHtml}
           </div>
 
-          <div class="kanban-card-title" data-action="edit" data-id="${item.id}" style="cursor: pointer;">
+          <div class="kanban-card-title" data-action="edit" data-id="${item.id}">
             ${escapeHtml(item.title)}
           </div>
 
@@ -72,12 +72,25 @@ export function renderKanbanView(container, items, { onEdit, onStageChange, onAd
     </div>
   `;
 
-  // Attach card edit clicks
-  container.querySelectorAll('[data-action="edit"]').forEach(el => {
-    el.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = el.getAttribute('data-id');
-      if (onEdit) onEdit(id);
+  // Attach card edit clicks on entire card
+  let isDragging = false;
+
+  container.querySelectorAll('.kanban-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (isDragging) return;
+      const id = card.getAttribute('data-id');
+      if (onEdit && id) onEdit(id);
+    });
+
+    card.addEventListener('dragstart', (e) => {
+      isDragging = true;
+      card.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', card.getAttribute('data-id'));
+    });
+
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      setTimeout(() => { isDragging = false; }, 50);
     });
   });
 
@@ -90,21 +103,6 @@ export function renderKanbanView(container, items, { onEdit, onStageChange, onAd
   });
 
   // Drag & Drop
-  let draggedCardId = null;
-
-  container.querySelectorAll('.kanban-card').forEach(card => {
-    card.addEventListener('dragstart', (e) => {
-      draggedCardId = card.getAttribute('data-id');
-      card.classList.add('dragging');
-      e.dataTransfer.setData('text/plain', draggedCardId);
-    });
-
-    card.addEventListener('dragend', () => {
-      card.classList.remove('dragging');
-      draggedCardId = null;
-    });
-  });
-
   container.querySelectorAll('.kanban-cards-list').forEach(colList => {
     colList.addEventListener('dragover', (e) => {
       e.preventDefault();
@@ -119,9 +117,10 @@ export function renderKanbanView(container, items, { onEdit, onStageChange, onAd
       e.preventDefault();
       colList.style.background = 'transparent';
       const targetStageId = colList.getAttribute('data-stage-id');
-      if (draggedCardId && targetStageId) {
+      const draggedId = e.dataTransfer.getData('text/plain');
+      if (draggedId && targetStageId) {
         if (onStageChange) {
-          onStageChange(draggedCardId, targetStageId);
+          onStageChange(draggedId, targetStageId);
         }
       }
     });

@@ -21,8 +21,6 @@ export function renderTableView(container, items, { onEdit, onDelete, onStatusCh
     const categoryBadgeHtml = formatCategoryBadge(item.category);
     const stageBadgeClass = getStageBadgeClass(item.stage || 'gravar');
     const stageName = getStageLabel(item.stage || 'gravar');
-    const statusClass = getStatusClass(item.status);
-    const statusText = getStatusLabel(item.status);
 
     const assignee = item.assignee || '—';
     const assigneeInitial = assignee !== '—' ? assignee.charAt(0).toUpperCase() : '?';
@@ -45,7 +43,7 @@ export function renderTableView(container, items, { onEdit, onDelete, onStatusCh
     const dataFormatted = `${datePrefix} ${formatDateBr(dateVal)}${timeVal ? ', ' + timeVal : ''}`;
 
     return `
-      <tr data-id="${item.id}">
+      <tr data-id="${item.id}" style="cursor: pointer;">
         <td>${codeFormatted}</td>
         <td>
           <div class="content-cell">
@@ -103,12 +101,11 @@ export function renderTableView(container, items, { onEdit, onDelete, onStatusCh
     </div>
   `;
 
-  // Attach edit event handlers
-  container.querySelectorAll('[data-action="edit"]').forEach(el => {
-    el.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = el.getAttribute('data-id');
-      if (onEdit) onEdit(id);
+  // Attach edit event handlers on entire row
+  container.querySelectorAll('tr[data-id]').forEach(row => {
+    row.addEventListener('click', (e) => {
+      const id = row.getAttribute('data-id');
+      if (onEdit && id) onEdit(id);
     });
   });
 }
