@@ -1,6 +1,8 @@
 /* ==========================================================================
-   DATA STORE & LOCALSTORAGE PERSISTENCE (SIMPLIFIED - CATEGORIES ONLY)
+   DATA STORE - SUPABASE REAL-TIME PERSISTENCE & LOCALSTORAGE FALLBACK
    ========================================================================== */
+
+import { supabase } from './supabaseClient.js';
 
 const STORAGE_KEY = 'audiovisual_workflow_data_v2';
 const CATEGORIES_KEY = 'audiovisual_categories_v2';
@@ -17,19 +19,17 @@ const DEFAULT_CATEGORY_COLORS = {
   'STORIES': '#FF7700'
 };
 
-// Initial realistic dataset matching the Lovable interface structure
 const INITIAL_DATA = [
   {
     id: 'item_01',
     code: '01',
     category: 'INSTA',
-    stage: 'gravar', // 'gravar', 'editar', 'validacao', 'concluido'
+    stage: 'gravar',
     title: 'Reels | Teste de Conteúdo',
     subtitle: 'Reels • 9:16 • 4K',
     assignee: 'Lucas',
-    status: 'atencao', // 'pendente', 'atencao', 'atrasado', 'postado', 'cancelado'
+    status: 'atencao',
     priority: 'alta',
-    // Dates
     dateShooting: '2026-08-24',
     timeShooting: '17:58',
     dateEditingDeadline: '2026-08-26',
@@ -124,17 +124,23 @@ const INITIAL_DATA = [
 class DataStore {
   constructor() {
     this.listeners = [];
-    this.load();
+    this.items = [];
+    this.categories = [];
+    this.categoryColors = {};
+    this.isSupabaseConnected = false;
+
+    this.loadLocal();
+    this.initSupabaseSync();
   }
 
-  load() {
+  loadLocal() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         this.items = JSON.parse(saved);
       } else {
         this.items = [...INITIAL_DATA];
-        this.save();
+        this.saveLocal();
       }
 
       const savedCategories = localStorage.getItem(CATEGORIES_KEY);
@@ -142,7 +148,7 @@ class DataStore {
         this.categories = JSON.parse(savedCategories);
       } else {
         this.categories = [...DEFAULT_CATEGORIES];
-        this.saveCategories();
+        this.saveCategoriesLocal();
       }
 
       const savedColors = localStorage.getItem(CATEGORY_COLORS_KEY);
@@ -150,14 +156,147 @@ class DataStore {
         this.categoryColors = JSON.parse(savedColors);
       } else {
         this.categoryColors = { ...DEFAULT_CATEGORY_COLORS };
-        this.saveCategoryColors();
+        this.saveCategoryColorsLocal();
       }
     } catch (e) {
-      console.error('Error loading data:', e);
+      console.error('Error loading local data:', e);
       this.items = [...INITIAL_DATA];
       this.categories = [...DEFAULT_CATEGORIES];
       this.categoryColors = { ...DEFAULT_CATEGORY_COLORS };
     }
+  }
+
+  async initSupabaseSync() {
+    if (!supabase) {
+      console.log('[Supabase] Credenciais não configuradas nas variáveis de ambiente.');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.from('workflow_store').select('*');
+
+      if (error) {
+        console.warn('[Supabase] Aviso ao buscar dados (a tabela workflow_store pode precisar ser criada no Supabase):', error.message);
+        return;
+      }
+
+      this.isSupabaseConnected = true;
+
+      if (data && data.length > 0) {
+        const itemsRow = data.find(r => r.id === 'items');
+        const categoriesRow = data.find(r => r.id === 'categories');
+        const colorsRow = data.find(r => r.id === 'category_colors');
+
+        if (itemsRow && Array.isArray(itemsRow.data)) {
+          this.items = itemsRow.data;
+          this.saveLocal();
+        } else {
+          this.pushToSupabase('items', this.items);
+        }
+
+        if (categoriesRow && Array.isArray(categoriesRow.data)) {
+          this.categories = categoriesRow.data;
+          this.saveCategoriesLocal();
+        } else {
+          this.pushToSupabase('categories', this.categories);
+        }
+
+        if (colorsRow && colorsRow.data) {
+          this.categoryColors = colorsRow.data;
+          this.saveCategoryColorsLocal();
+        } else {
+          this.pushToSupabase('category_colors', this.categoryColors);
+        }
+
+        this.notify();
+      } else {
+        // Tabela vazia: insere os dados iniciais no Supabase
+        await this.pushToSupabase('items', this.items);
+        await this.pushToSupabase('categories', this.categories);
+        await this.pushToSupabase('category_colors', this.categoryColors);
+      }
+
+      // Escuta mudanças em tempo real de outros dispositivos/computadores
+      supabase
+        .channel('public:workflow_store')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'workflow_store' }, payload => {
+          if (payload.new) {
+            const { id, data: newData } = payload.new;
+            if (id === 'items' && Array.isArray(newData)) {
+              this.items = newData;
+              this.saveLocal();
+              this.notify();
+            } else if (id === 'categories' && Array.isArray(newData)) {
+              this.categories = newData;
+              this.saveCategoriesLocal();
+              this.notify();
+            } else if (id === 'category_colors' && newData) {
+              this.categoryColors = newData;
+              this.saveCategoryColorsLocal();
+              this.notify();
+            }
+          }
+        })
+        .subscribe();
+
+    } catch (e) {
+      console.warn('[Supabase] Exceção ao sincronizar:', e);
+    }
+  }
+
+  async pushToSupabase(key, payloadData) {
+    if (!supabase) return;
+    try {
+      await supabase.from('workflow_store').upsert({
+        id: key,
+        data: payloadData,
+        updated_at: new Date().toISOString()
+      });
+    } catch (e) {
+      console.error(`[Supabase] Erro ao enviar ${key}:`, e);
+    }
+  }
+
+  saveLocal() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.items));
+      this.notify();
+    } catch (e) {
+      console.error('Error saving local data:', e);
+    }
+  }
+
+  saveCategoriesLocal() {
+    try {
+      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(this.categories));
+      this.notify();
+    } catch (e) {
+      console.error('Error saving local categories:', e);
+    }
+  }
+
+  saveCategoryColorsLocal() {
+    try {
+      localStorage.setItem(CATEGORY_COLORS_KEY, JSON.stringify(this.categoryColors));
+      this.notify();
+    } catch (e) {
+      console.error('Error saving local category colors:', e);
+    }
+  }
+
+  save() {
+    this.saveLocal();
+    this.pushToSupabase('items', this.items);
+  }
+
+  saveCategories() {
+    this.saveCategoriesLocal();
+    this.pushToSupabase('categories', this.categories);
+  }
+
+  saveCategoryColors() {
+    this.saveCategoryColorsLocal();
+    this.pushToSupabase('category_colors', this.categoryColors);
   }
 
   subscribe(listener) {
@@ -181,33 +320,6 @@ class DataStore {
 
   getCategories() {
     return [...this.categories];
-  }
-
-  save() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.items));
-      this.notify();
-    } catch (e) {
-      console.error('Error saving data:', e);
-    }
-  }
-
-  saveCategories() {
-    try {
-      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(this.categories));
-      this.notify();
-    } catch (e) {
-      console.error('Error saving categories:', e);
-    }
-  }
-
-  saveCategoryColors() {
-    try {
-      localStorage.setItem(CATEGORY_COLORS_KEY, JSON.stringify(this.categoryColors));
-      this.notify();
-    } catch (e) {
-      console.error('Error saving category colors:', e);
-    }
   }
 
   getCategoryColor(categoryName) {
